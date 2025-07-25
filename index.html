@@ -55,7 +55,7 @@
                 <div class="text-center">
                     <img src="https://assets.nsd.co.id/images/kampus/logo/AMNI.png" alt="Logo UNIMAR AMNI" class="w-24 h-24 mx-auto mb-4">
                     <h1 class="text-2xl font-bold text-blue-400">Portal Nilai Mahasiswa</h1>
-                    <p class="text-gray-200">Lecturer: Dhanan Abimanto</p>
+                    <p class="text-gray-400">Lecturer: Dhanan Abimanto</p>
                 </div>
                 <div id="login-error" class="hidden bg-red-500 text-white p-3 rounded-lg text-center"></div>
                 <div class="space-y-4">
@@ -64,8 +64,8 @@
                         <input type="text" id="username" name="username" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan NIM Anda">
                     </div>
                     <div>
-                        <label for="password" class="block text-sm font-medium text-gray-300">Password (NIM)</label>
-                        <input type="password" id="password" name="password" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password berupa NIM Anda">
+                        <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                        <input type="password" id="password" name="password" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password dengan NIM Anda">
                     </div>
                 </div>
                 <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
@@ -372,9 +372,9 @@
                             <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors">
                                 <td class="py-3 px-4 text-gray-300">${student.nim}</td>
                                 <td class="py-3 px-4 text-white font-medium">${student.name}</td>
-                                <td class="py-3 px-4"><input type="number" id="tugas-${nim}" value="${student.nilai_tugas || 0}" class="w-20 bg-gray-900 text-center rounded p-1"></td>
-                                <td class="py-3 px-4"><input type="number" id="mid-${nim}" value="${student.nilai_mid || 0}" class="w-20 bg-gray-900 text-center rounded p-1"></td>
-                                <td class="py-3 px-4"><input type="number" id="uas-${nim}" value="${student.nilai_uas || 0}" class="w-20 bg-gray-900 text-center rounded p-1"></td>
+                                <td class="py-3 px-4"><input type="number" step="any" id="tugas-${nim}" value="${student.nilai_tugas || 0}" class="w-20 bg-gray-900 text-center rounded p-1"></td>
+                                <td class="py-3 px-4"><input type="number" step="any" id="mid-${nim}" value="${student.nilai_mid || 0}" class="w-20 bg-gray-900 text-center rounded p-1"></td>
+                                <td class="py-3 px-4"><input type="number" step="any" id="uas-${nim}" value="${student.nilai_uas || 0}" class="w-20 bg-gray-900 text-center rounded p-1"></td>
                                 <td class="py-3 px-4 text-center space-x-2">
                                     <button data-nim="${nim}" class="save-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Simpan</button>
                                     <button data-nim="${nim}" data-name="${student.name}" class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Hapus</button>
@@ -403,9 +403,9 @@
                     const studentData = snapshot.val();
                     set(studentRef, {
                         ...studentData,
-                        nilai_tugas: parseInt(tugas, 10),
-                        nilai_mid: parseInt(mid, 10),
-                        nilai_uas: parseInt(uas, 10)
+                        nilai_tugas: parseFloat(tugas),
+                        nilai_mid: parseFloat(mid),
+                        nilai_uas: parseFloat(uas)
                     }).then(() => {
                         showNotification('admin-notification', `Nilai ${studentData.name} berhasil diperbarui.`, false);
                     }).catch(error => {
