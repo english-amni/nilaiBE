@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nilai MK Inggris Bisnis - AMNI Semarang</title>
+    <link rel="icon" href="https://assets.nsd.co.id/images/kampus/logo/AMNI.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        body {
+            background-image: url('https://www.shutterstock.com/image-vector/abstract-black-white-stripe-line-600nw-2478425579.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .score-cell {
+            transition: all 0.3s ease;
+        }
+        .score-cell:hover {
+            transform: scale(1.05);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Firebase Config -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBi8LvPc5B4cl0n3ivp6-OwmvVi5c9KD2I",
+            authDomain: "nilai-bd05f.firebaseapp.com",
+            databaseURL: "https://nilai-bd05f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "nilai-bd05f",
+            storageBucket: "nilai-bd05f.firebasestorage.app",
+            messagingSenderId: "497359554290",
+            appId: "1:497359554290:web:4c9dd94fed37a1cc81726b",
+            measurementId: "G-WLXJ7WP584"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
+
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://assets.nsd.co.id/images/kampus/logo/AMNI.png" alt="AMNI Logo" class="h-12">
+                <h1 class="text-xl font-bold gradient-text">Nilai MK Inggris Bisnis</h1>
+            </div>
+            <div id="authButtons" class="flex space-x-2">
+                <button onclick="showLoginModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Login</button>
+            </div>
+            <div id="userInfo" class="hidden flex items-center space-x-4">
+                <span id="welcomeMessage" class="font-medium"></span>
+                <button onclick="logout()" class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- Student Dashboard -->
+        <div id="studentDashboard" class="hidden">
+            <div class="glass-card p-6 mb-8">
+                <h2 id="studentGreeting" class="text-2xl font-bold mb-4 gradient-text"></h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white bg-opacity-90 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-800 text-white">
+                            <tr>
+                                <th class="py-3 px-4 text-left">Komponen Nilai</th>
+                                <th class="py-3 px-4 text-center">Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-3 px-4 font-medium">Nilai Tugas (Akumulasi)</td>
+                                <td id="tugasScore" class="py-3 px-4 text-center score-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">Nilai MID</td>
+                                <td id="midScore" class="py-3 px-4 text-center score-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">Nilai UAS</td>
+                                <td id="uasScore" class="py-3 px-4 text-center score-cell">-</td>
+                            </tr>
+                            <tr class="bg-gray-100">
+                                <td class="py-3 px-4 font-bold">Nilai Akhir</td>
+                                <td id="finalScore" class="py-3 px-4 text-center font-bold score-cell">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-blue-800">Rumus Nilai Akhir</h3>
+                        <p class="text-sm">(30% Tugas) + (30% MID) + (40% UAS)</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-green-800">Grade</h3>
+                        <p id="grade" class="text-xl font-bold">-</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-yellow-800">Status</h3>
+                        <p id="status" class="text-sm font-medium">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="hidden">
+            <div class="glass-card p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4 gradient-text">Admin Dashboard</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Daftar Nilai Mahasiswa</h3>
+                    <button onclick="showAddStudentModal()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Tambah Mahasiswa</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white bg-opacity-90 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-800 text-white">
+                            <tr>
+                                <th class="py-3 px-4 text-left">NIM</th>
+                                <th class="py-3 px-4 text-left">Nama</th>
+                                <th class="py-3 px-4 text-center">Tugas</th>
+                                <th class="py-3 px-4 text-center">MID</th>
+                                <th class="py-3 px-4 text-center">UAS</th>
+                                <th class="py-3 px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody" class="divide-y divide-gray-200">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Info -->
+        <div id="loginInfo" class="glass-card p-8 max-w-2xl mx-auto text-center">
+            <img src="https://assets.nsd.co.id/images/kampus/logo/AMNI.png" alt="AMNI Logo" class="h-20 mx-auto mb-4">
+            <h2 class="text-2xl font-bold mb-2 gradient-text">Sistem Informasi Nilai</h2>
+            <h3 class="text-xl font-semibold mb-4">Mata Kuliah Inggris Bisnis</h3>
+            <p class="mb-6">Universitas Maritim AMNI Semarang</p>
+            <button onclick="showLoginModal()" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium">Login untuk Melihat Nilai</button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Universitas Maritim AMNI Semarang. All rights reserved.</p>
+            <p class="text-sm text-gray-400 mt-2">Sistem Informasi Nilai MK Inggris Bisnis</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold gradient-text">Login</h3>
+                <button onclick="hideLoginModal()" class="text-gray-500 hover:text-gray-700">&times;</button>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username/NIM</label>
+                    <input type="text" id="username" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Login</button>
+            </form>
+            <div id="loginError" class="mt-3 text-red-500 text-sm hidden"></div>
+        </div>
+    </div>
+
+    <!-- Edit Score Modal -->
+    <div id="editScoreModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold gradient-text">Edit Nilai</h3>
+                <button onclick="hideEditScoreModal()" class="text-gray-500 hover:text-gray-700">&times;</button>
+            </div>
+            <form id="editScoreForm" onsubmit="updateStudentScore(event)">
+                <input type="hidden" id="editNim">
+                <div class="mb-4">
+                    <label for="editTugas" class="block text-sm font-medium text-gray-700 mb-1">Nilai Tugas</label>
+                    <input type="number" id="editTugas" min="0" max="100" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="editMid" class="block text-sm font-medium text-gray-700 mb-1">Nilai MID</label>
+                    <input type="number" id="editMid" min="0" max="100" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label for="editUas" class="block text-sm font-medium text-gray-700 mb-1">Nilai UAS</label>
+                    <input type="number" id="editUas" min="0" max="100" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Simpan</button>
+                    <button type="button" onclick="hideEditScoreModal()" class="flex-1 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold gradient-text">Tambah Mahasiswa</h3>
+                <button onclick="hideAddStudentModal()" class="text-gray-500 hover:text-gray-700">&times;</button>
+            </div>
+            <form id="addStudentForm" onsubmit="addNewStudent(event)">
+                <div class="mb-4">
+                    <label for="newNim" class="block text-sm font-medium text-gray-700 mb-1">NIM</label>
+                    <input type="text" id="newNim" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="newName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Tambah</button>
+                    <button type="button" onclick="hideAddStudentModal()" class="flex-1 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Sample student data
+        const students = [
+            { nim: '232704001', name: 'COBA-COBA' },
+            { nim: '242704001', name: 'ABDUL RAHMAN' },
+            { nim: '242704002', name: 'AHMAD THAIB' },
+            { nim: '242704003', name: 'ANGGA SURYAFORTUNA' },
+            { nim: '242704004', name: 'APRILIA NUR HAKIM' },
+            { nim: '242704005', name: 'CAESARIO NANDA BUANA' },
+            { nim: '242704006', name: 'ELKANA DUHA' },
+            { nim: '242704007', name: 'ELKE FITRIA ELSHYNTA' },
+            { nim: '242704008', name: 'ELMI ANDIKA NUROHMAN' },
+            { nim: '242704009', name: 'FAHRUL HUDA' },
+            { nim: '242704010', name: 'HIMAWAN PRASETIO' },
+            { nim: '242704011', name: 'IMAM SYAIFURRACHMAN' },
+            { nim: '242704012', name: 'M GUSLIM RAMADHAN BIMO BAWONO' },
+            { nim: '242704013', name: 'MARIANY MARSELINA GOIS' },
+            { nim: '242704014', name: 'MUHAMMAD FAJAR' },
+            { nim: '242704015', name: 'MUHAMMAD IRIANSYAH' },
+            { nim: '242704016', name: 'OKTAVIA BUDIAWATI' },
+            { nim: '242704017', name: 'PASKALIS LABA LUON' },
+            { nim: '242704018', name: 'RAHMAN NUR HANUBUN' },
+            { nim: '242704019', name: 'RAYZHA RIFKI AULIATSANIE' },
+            { nim: '242704020', name: 'RR. OKTALINDA NILASARI' },
+            { nim: '242704021', name: 'SYAFRIZAL' },
+            { nim: '242704022', name: 'TRI YOGA PURNOMO' },
+            { nim: '242704023', name: 'VICTORIA PUTRI BAHARI SILABAN' },
+            { nim: '242704024', name: 'ADOLFUS ANDIKA ADO BALA' },
+            { nim: '242704025', name: 'ARDHI ATSNI NORMAWAN' },
+            { nim: '242704026', name: 'AVIOR DWIHAPSARI' },
+            { nim: '242704027', name: 'AZARIAS DARWIANTO DJITA' },
+            { nim: '242704028', name: 'DEDE TRIPANI' },
+            { nim: '242704029', name: 'EVAN FRIDAYANTI NDURURU' },
+            { nim: '242704030', name: 'FELLISIA YANUAR PRIMADHANI' },
+            { nim: '242704031', name: 'FRANSISKUS REWEMASE' },
+            { nim: '242704032', name: 'GILANG SAHRIAL' },
+            { nim: '242704033', name: 'MIFTAHUL ARIFIN' },
+            { nim: '242704034', name: 'MOCHAMAD CODROI' },
+            { nim: '242704035', name: 'RANIKA YANTI' },
+            { nim: '242704036', name: 'SATRIO ANDRI CAHYO ASMORO' },
+            { nim: '242704037', name: 'HENDRI ADE WIBOWO' },
+            { nim: '242704038', name: 'KUKUH OKTANUGRAH TRY WIYONO' },
+            { nim: '242704039', name: 'MUHAMMAD SYARIF RIZKI NAZAR' },
+            { nim: '242704040', name: 'ZAHROTUL UYUNI' },
+            { nim: '242704041', name: 'ARMANSYAH WIDIANTO' },
+            { nim: '242704042', name: 'DIMAS NANDA FAJAR FITRIANTO' },
+            { nim: '242704043', name: 'ERFIRA DINDA PUTRI' },
+            { nim: '242704044', name: 'WULAN AGUSTA DINI RAHAYU' },
+            { nim: '242704045', name: 'KHOIRUNNISA' },
+            { nim: '242704046', name: 'MUHAMMAD FIRSAN INDRA PRADIPTA' },
+            { nim: '242704047', name: 'RIZKY PRANANDA SARI' },
+            { nim: '242704048', name: 'IWAN WEDA' },
+            { nim: '242704049', name: 'PITOYO' },
+            { nim: '242704050', name: 'FIKRI AL AKBAR' },
+            { nim: '242704051', name: 'EGA CAHYANI PUTRI' },
+            { nim: '242704052', name: 'SALSABILA AUDRI' },
+            { nim: '242704053', name: 'SYAFIYAH YULIANA' },
+            { nim: '242704054', name: 'AGUS SUSANTO' }
+        ];
+
+        // Check if user is already logged in (from sessionStorage)
+        const loggedInUser = sessionStorage.getItem('loggedInUser');
+        if (loggedInUser) {
+            checkUserRole(loggedInUser);
+        } else {
+            showLoginPage();
+        }
+
+        // Modal functions
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function hideLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function showEditScoreModal(nim, tugas, mid, uas) {
+            document.getElementById('editNim').value = nim;
+            document.getElementById('editTugas').value = tugas;
+            document.getElementById('editMid').value = mid;
+            document.getElementById('editUas').value = uas;
+            document.getElementById('editScoreModal').classList.remove('hidden');
+        }
+
+        function hideEditScoreModal() {
+            document.getElementById('editScoreModal').classList.add('hidden');
+        }
+
+        function showAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('hidden');
+        }
+
+        function hideAddStudentModal() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+        }
+
+        // Login handler
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple authentication (in a real app, use proper authentication)
+            if (username === 'admin' && password === 'admin123') {
+                // Admin login
+                hideLoginModal();
+                showAdminDashboard();
+            } else {
+                // Student login - check if NIM exists
+                const student = students.find(s => s.nim === username);
+                if (student && username === password) {
+                    hideLoginModal();
+                    loadStudentData(username);
+                } else {
+                    document.getElementById('loginError').textContent = 'NIM atau password salah';
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            }
+        }
+
+        // Check user role and show appropriate dashboard
+        function checkUserRole(username) {
+            if (username === 'admin') {
+                showAdminDashboard();
+            } else {
+                loadStudentData(username);
+            }
+        }
+
+        // Load student data
+        function loadStudentData(nim) {
+            const student = students.find(s => s.nim === nim);
+            if (!student) return;
+            
+            // Show welcome message
+            document.getElementById('welcomeMessage').textContent = `Halo, ${student.name}`;
+            document.getElementById('studentGreeting').textContent = `Halo, ${student.name}`;
+            
+            // Show student dashboard
+            showStudentDashboard();
+            
+            // Load scores from Firebase
+            database.ref(`scores/${nim}`).once('value').then(snapshot => {
+                const scores = snapshot.val() || { tugas: 0, mid: 0, uas: 0 };
+                
+                // Display scores
+                document.getElementById('tugasScore').textContent = scores.tugas;
+                document.getElementById('midScore').textContent = scores.mid;
+                document.getElementById('uasScore').textContent = scores.uas;
+                
+                // Calculate final score (30% tugas + 30% mid + 40% uas)
+                const finalScore = Math.round((scores.tugas * 0.3) + (scores.mid * 0.3) + (scores.uas * 0.4));
+                document.getElementById('finalScore').textContent = finalScore;
+                
+                // Determine grade
+                let grade = '';
+                if (finalScore >= 85) grade = 'A';
+                else if (finalScore >= 75) grade = 'B';
+                else if (finalScore >= 65) grade = 'C';
+                else if (finalScore >= 55) grade = 'D';
+                else grade = 'E';
+                
+                document.getElementById('grade').textContent = grade;
+                document.getElementById('status').textContent = grade === 'E' ? 'Tidak Lulus' : 'Lulus';
+                document.getElementById('status').className = grade === 'E' ? 'text-sm font-medium text-red-600' : 'text-sm font-medium text-green-600';
+            });
+        }
+
+        // Load all students data for admin
+        function loadAllStudentsData() {
+            const tableBody = document.getElementById('studentsTableBody');
+            tableBody.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                
+                database.ref(`scores/${student.nim}`).once('value').then(snapshot => {
+                    const scores = snapshot.val() || { tugas: 0, mid: 0, uas: 0 };
+                    
+                    row.innerHTML = `
+                        <td class="py-3 px-4">${student.nim}</td>
+                        <td class="py-3 px-4">${student.name}</td>
+                        <td class="py-3 px-4 text-center">${scores.tugas}</td>
+                        <td class="py-3 px-4 text-center">${scores.mid}</td>
+                        <td class="py-3 px-4 text-center">${scores.uas}</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="showEditScoreModal('${student.nim}', ${scores.tugas}, ${scores.mid}, ${scores.uas})" class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition text-sm">Edit</button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        // Update student score
+        function updateStudentScore(e) {
+            e.preventDefault();
+            const nim = document.getElementById('editNim').value;
+            const tugas = parseInt(document.getElementById('editTugas').value);
+            const mid = parseInt(document.getElementById('editMid').value);
+            const uas = parseInt(document.getElementById('editUas').value);
+            
+            database.ref(`scores/${nim}`).set({
+                tugas: tugas,
+                mid: mid,
+                uas: uas
+            }).then(() => {
+                hideEditScoreModal();
+                loadAllStudentsData();
+                
+                // If the logged in user is editing their own score, refresh their view
+                const currentUser = auth.currentUser;
+                if (currentUser && currentUser.email.split('@')[0] === nim) {
+                    loadStudentData(nim);
+                }
+            });
+        }
+
+        // Add new student
+        function addNewStudent(e) {
+            e.preventDefault();
+            const nim = document.getElementById('newNim').value;
+            const name = document.getElementById('newName').value.toUpperCase();
+            
+            // Check if NIM already exists
+            if (students.some(s => s.nim === nim)) {
+                alert('NIM sudah terdaftar');
+                return;
+            }
+            
+            // Add to students array
+            students.push({ nim, name });
+            
+            // Initialize scores
+            database.ref(`scores/${nim}`).set({
+                tugas: 0,
+                mid: 0,
+                uas: 0
+            }).then(() => {
+                hideAddStudentModal();
+                loadAllStudentsData();
+                document.getElementById('addStudentForm').reset();
+            });
+        }
+
+        // Logout
+        function logout() {
+            sessionStorage.removeItem('loggedInUser');
+            showLoginPage();
+        }
+
+        // Show different views
+        function showLoginPage() {
+            document.getElementById('loginInfo').classList.remove('hidden');
+            document.getElementById('studentDashboard').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('authButtons').classList.remove('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+        }
+
+        function showStudentDashboard() {
+            document.getElementById('loginInfo').classList.add('hidden');
+            document.getElementById('studentDashboard').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('authButtons').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('loginInfo').classList.add('hidden');
+            document.getElementById('studentDashboard').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            document.getElementById('authButtons').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('welcomeMessage').textContent = 'Halo, Admin';
+            
+            loadAllStudentsData();
+        }
+
+        // Initialize the page
+        showLoginPage();
+    </script>
+</body>
+</html>
